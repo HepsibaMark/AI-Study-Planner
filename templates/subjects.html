@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subjects</title>
+</head>
+<body>
+
+<h2>Enter Subject Details</h2>
+
+<form action="/result" method="post">
+
+{% for i in range(num) %}
+
+<label>Subject {{i+1}}</label>
+<input type="text" name="subject" required>
+
+<label>Difficulty</label>
+<select name="difficulty">
+<option value="Easy">Easy</option>
+<option value="Medium">Medium</option>
+<option value="Hard">Hard</option>
+</select>
+
+<label>Study Hours</label>
+<input type="number" name="hours" required>
+
+<br><br>
+
+{% endfor %}
+
+<button type="submit">Generate Plan</button>
+
+</form>
+
+</body>
+</html>

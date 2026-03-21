@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Study Planner</title>
+</head>
+<body>
+
+<h2>Enter Subject Details</h2>
+
+Subject 1:
+<input type="text" id="sub1" placeholder="Subject name">
+<select id="diff1">
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+</select>
+
+<br><br>
+
+Subject 2:
+<input type="text" id="sub2" placeholder="Subject name">
+<select id="diff2">
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+</select>
+
+<br><br>
+
+Subject 3:
+<input type="text" id="sub3" placeholder="Subject name">
+<select id="diff3">
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+</select>
+
+<br><br>
+
+<button onclick="generatePlan()">Generate Plan</button>
+
+<h3 id="result"></h3>
+
+<script>
+function getHours(diff){
+    if(diff=="Easy") return 1;
+    if(diff=="Medium") return 2;
+    if(diff=="Hard") return 3;
+}
+
+function generatePlan(){
+
+let s1=document.getElementById("sub1").value;
+let s2=document.getElementById("sub2").value;
+let s3=document.getElementById("sub3").value;
+
+let d1=document.getElementById("diff1").value;
+let d2=document.getElementById("diff2").value;
+let d3=document.getElementById("diff3").value;
+
+let plan =
+s1 + " - " + getHours(d1) + " hrs<br>" +
+s2 + " - " + getHours(d2) + " hrs<br>" +
+s3 + " - " + getHours(d3) + " hrs";
+
+document.getElementById("result").innerHTML = plan;
+
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Study Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: #2a2a35;
+    --accent: #7c6aff;
+    --accent2: #ff6a9d;
+    --accent3: #6affda;
+    --text: #f0f0f8;
+    --muted: #888899;
+    --easy: #6affda;
+    --medium: #ffd166;
+    --hard: #ff6a9d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(124,106,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(124,106,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
+  header { text-align: center; margin-bottom: 50px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(36px, 6vw, 58px); font-weight: 800; line-height: 1.05; letter-spacing: -1px; }
+  h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .subtitle { color: var(--muted); margin-top: 12px; font-size: 16px; font-weight: 300; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 20px; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(124,106,255,0.3); }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card-title::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; display: block; }
+  .form-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; align-items: end; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  input, select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,106,255,0.1); }
+  input::placeholder { color: var(--muted); }
+  select option { background: var(--surface2); }
+  .btn { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #6a5af0; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(124,106,255,0.3); }
+  .btn-danger { background: rgba(255,106,157,0.15); color: var(--accent2); border: 1px solid rgba(255,106,157,0.2); }
+  .btn-danger:hover { background: rgba(255,106,157,0.25); }
+  .btn-big { width: 100%; padding: 16px; font-size: 15px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+  .btn-big:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,106,255,0.35); }
+  .btn-big:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  #subjectList { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; min-height: 10px; }
+  .subject-tag { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+  .subject-tag.Easy { background: rgba(106,255,218,0.08); border-color: rgba(106,255,218,0.25); color: var(--easy); }
+  .subject-tag.Medium { background: rgba(255,209,102,0.08); border-color: rgba(255,209,102,0.25); color: var(--medium); }
+  .subject-tag.Hard { background: rgba(255,106,157,0.08); border-color: rgba(255,106,157,0.25); color: var(--hard); }
+  .subject-tag button { background: none; border: none; color: currentColor; cursor: pointer; opacity: 0.6; font-size: 14px; padding: 0; line-height: 1; }
+  .subject-tag button:hover { opacity: 1; }
+  .settings-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .loading { display: none; text-align: center; padding: 30px; color: var(--muted); }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #planOutput { display: none; }
+  .plan-summary { background: rgba(124,106,255,0.08); border: 1px solid rgba(124,106,255,0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: var(--text); line-height: 1.6; }
+  .day-block { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; animation: slideUp 0.4s ease both; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .day-header { background: var(--surface2); padding: 12px 18px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .day-header .date { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .session { display: grid; grid-template-columns: 130px 1fr auto; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--border); align-items: center; font-size: 14px; }
+  .session:hover { background: rgba(255,255,255,0.02); }
+  .session-time { color: var(--muted); font-size: 12px; }
+  .session-info { display: flex; flex-direction: column; gap: 2px; }
+  .session-subject { font-weight: 500; }
+  .session-topic { font-size: 12px; color: var(--muted); }
+  .difficulty-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .difficulty-dot.Easy { background: var(--easy); }
+  .difficulty-dot.Medium { background: var(--medium); }
+  .difficulty-dot.Hard { background: var(--hard); }
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+  .tip { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 13px; color: var(--muted); line-height: 1.5; position: relative; padding-left: 30px; }
+  .tip::before { content: '💡'; position: absolute; left: 10px; top: 13px; font-size: 13px; }
+  .pomodoro { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .timer-display { font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800; letter-spacing: -2px; background: linear-gradient(135deg, var(--accent3), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .timer-controls { display: flex; gap: 8px; }
+  .timer-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .stat-number { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .error-msg { background: rgba(255,106,157,0.1); border: 1px solid rgba(255,106,157,0.3); border-radius: 10px; padding: 12px 16px; color: var(--accent2); font-size: 13px; display: none; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Your <span>Smart Study</span><br>Planner</h1>
+    <p class="subtitle">Add subjects, set your schedule — AI builds the perfect plan.</p>
+  </header>
+  <div class="card">
+    <div class="card-title">Add Subjects</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Subject Name</label>
+        <input type="text" id="subjectName" placeholder="e.g. Mathematics" onkeydown="if(event.key==='Enter') addSubject()" />
+      </div>
+      <div class="form-group">
+        <label>Difficulty</label>
+        <select id="difficulty">
+          <option value="Easy">Easy</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Hours</label>
+        <input type="number" id="hours" min="1" max="20" value="3" style="width:80px" />
+      </div>
+      <button class="btn btn-primary" onclick="addSubject()" style="align-self:end">Add</button>
+    </div>
+    <div id="subjectList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Plan Settings</div>
+    <div class="settings-row">
+      <div class="form-group">
+        <label>Total Study Days</label>
+        <input type="number" id="totalDays" value="7" min="1" max="30" />
+      </div>
+      <div class="form-group">
+        <label>Hours Per Day</label>
+        <input type="number" id="hoursPerDay" value="4" min="1" max="12" />
+      </div>
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="startDate" />
+      </div>
+    </div>
+    <button class="btn btn-big" id="generateBtn" onclick="generatePlan()">
+      ✦ Generate AI Study Plan
+    </button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>AI is crafting your personalized study plan...</p>
+  </div>
+  <div id="planOutput">
+    <div class="stats" id="planStats"></div>
+    <div class="card">
+      <div class="card-title">Your AI Study Plan</div>
+      <div class="plan-summary" id="planSummary"></div>
+      <div id="planDays"></div>
+      <div class="tips-grid" id="planTips"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pomodoro Timer</div>
+    <div class="pomodoro">
+      <div>
+        <div class="timer-label" id="timerLabel">Focus Session</div>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+      </div>
+      <div class="timer-controls">
+        <button class="btn btn-primary" onclick="startTimer()">▶ Start</button>
+        <button class="btn" onclick="pauseTimer()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">⏸ Pause</button>
+        <button class="btn btn-danger" onclick="resetTimer()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+let subjects = [];
+let timerInterval = null;
+let timerSeconds = 25 * 60;
+let timerRunning = false;
+let isBreak = false;
+
+window.onload = () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('startDate').value = today;
+  loadSubjects();
+};
+
+async function loadSubjects() {
+  try {
+    const res = await fetch('/subjects');
+    subjects = await res.json();
+    renderSubjects();
+  } catch (e) { console.error('Could not load subjects:', e); }
+}
+
+async function addSubject() {
+  const name = document.getElementById('subjectName').value.trim();
+  const difficulty = document.getElementById('difficulty').value;
+  const hours = parseInt(document.getElementById('hours').value);
+  if (!name) return showError('Please enter a subject name');
+  try {
+    const res = await fetch('/addSubject', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, difficulty, hours })
+    });
+    const data = await res.json();
+    subjects.push(data.subject);
+    renderSubjects();
+    document.getElementById('subjectName').value = '';
+    hideError();
+  } catch (e) { showError('Failed to save subject!'); }
+}
+
+async function deleteSubject(id) {
+  try {
+    await fetch(`/subjects/${id}`, { method: 'DELETE' });
+    subjects = subjects.filter(s => s._id !== id);
+    renderSubjects();
+  } catch (e) { console.error(e); }
+}
+
+function renderSubjects() {
+  const list = document.getElementById('subjectList');
+  if (subjects.length === 0) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:13px;margin-top:12px">No subjects yet. Add some above!</p>';
+    return;
+  }
+  list.innerHTML = subjects.map(s => `
+    <div class="subject-tag ${s.difficulty}">
+      <span>${s.name}</span>
+      <span style="opacity:0.6;font-size:11px">${s.difficulty} · ${s.hours}h</span>
+      <button onclick="deleteSubject('${s._id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+async function generatePlan() {
+  if (subjects.length === 0) return showError('Please add at least one subject!');
+  const totalDays = parseInt(document.getElementById('totalDays').value);
+  const studyHoursPerDay = parseInt(document.getElementById('hoursPerDay').value);
+  const startDate = document.getElementById('startDate').value;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('planOutput').style.display = 'none';
+  document.getElementById('generateBtn').disabled = true;
+  hideError();
+  try {
+    const res = await fetch('/generatePlan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ totalDays, studyHoursPerDay, startDate })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate plan');
+    renderPlan(data.studyPlan);
+  } catch (e) {
+    showError('Error: ' + e.message);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('generateBtn').disabled = false;
+  }
+}
+
+function renderPlan(plan) {
+  const totalSessions = plan.plan.reduce((acc, day) => acc + day.sessions.length, 0);
+  document.getElementById('planStats').innerHTML = `
+    <div class="stat"><div class="stat-number">${plan.plan.length}</div><div class="stat-label">Days</div></div>
+    <div class="stat"><div class="stat-number">${totalSessions}</div><div class="stat-label">Sessions</div></div>
+    <div class="stat"><div class="stat-number">${plan.totalHours}h</div><div class="stat-label">Total Study</div></div>
+  `;
+  document.getElementById('planSummary').textContent = plan.summary;
+  document.getElementById('planDays').innerHTML = plan.plan.map((day, i) => `
+    <div class="day-block" style="animation-delay:${i * 0.06}s">
+      <div class="day-header">
+        <span>Day ${day.day}</span>
+        <span class="date">${day.date}</span>
+      </div>
+      ${day.sessions.map(session => `
+        <div class="session">
+          <div class="session-time">${session.time}</div>
+          <div class="session-info">
+            <div class="session-subject">${session.subject}</div>
+            <div class="session-topic">${session.topic}</div>
+          </div>
+          <div class="difficulty-dot ${session.difficulty}"></div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  if (plan.tips && plan.tips.length) {
+    document.getElementById('planTips').innerHTML = plan.tips.map(tip => `<div class="tip">${tip}</div>`).join('');
+  }
+  document.getElementById('planOutput').style.display = 'block';
+  document.getElementById('planOutput').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
+function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  timerInterval = setInterval(() => {
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval); timerRunning = false; isBreak = !isBreak;
+      timerSeconds = isBreak ? 5 * 60 : 25 * 60;
+      document.getElementById('timerLabel').textContent = isBreak ? 'Break Time! 🎉' : 'Focus Session';
+      updateTimerDisplay(); return;
+    }
+    timerSeconds--; updateTimerDisplay();
+  }, 1000);
+}
+function pauseTimer() { clearInterval(timerInterval); timerRunning = false; }
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false; isBreak = false;
+  timerSeconds = 25 * 60;
+  document.getElementById('timerLabel').textContent = 'Focus Session';
+  updateTimerDisplay();
+}
+</script>
+</body>
+</html>

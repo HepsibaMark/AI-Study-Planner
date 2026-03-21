@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Study Plan</title>
+</head>
+<body>
+
+<h1>Your Study Plan</h1>
+
+<ul>
+
+{% for item in plan %}
+
+<li>
+{{item.subject}} - Difficulty: {{item.difficulty}} - {{item.hours}} hours
+</li>
+
+{% endfor %}
+
+</ul>
+
+</body>
+</html>

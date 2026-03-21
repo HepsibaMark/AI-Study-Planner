@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Study Planner</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#667eea,#764ba2);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.app{
+background:white;
+width:400px;
+padding:25px;
+border-radius:15px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+h2{
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#667eea;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#5563d6;
+}
+
+.subject{
+background:#f1f1f1;
+padding:6px;
+margin-top:5px;
+border-radius:6px;
+}
+
+#plan{
+margin-top:15px;
+background:#f9f9f9;
+padding:10px;
+border-radius:8px;
+}
+
+.timer{
+margin-top:20px;
+text-align:center;
+}
+
+#time{
+font-size:28px;
+font-weight:bold;
+margin:10px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<h2>📚 Smart Study Planner</h2>
+
+<input id="subject" placeholder="Enter subject">
+
+<select id="difficulty">
+<option>Easy</option>
+<option>Medium</option>
+<option>Hard</option>
+</select>
+
+<button onclick="addSubject()">➕ Add Subject</button>
+
+<div id="subjects"></div>
+
+<button onclick="generatePlan()">📊 Generate Plan</button>
+
+<div id="plan"></div>
+
+<div class="timer">
+
+<h3>⏱ Pomodoro Timer</h3>
+
+<div id="time">25:00</div>
+
+<button onclick="startTimer()">Start</button>
+<button onclick="resetTimer()">Reset</button>
+
+</div>
+
+</div>
+
+<script>
+
+let subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+
+displaySubjects();
+
+function addSubject(){
+
+let name=document.getElementById("subject").value;
+let diff=document.getElementById("difficulty").value;
+
+if(name===""){
+alert("Enter subject");
+return;
+}
+
+subjects.push({name,diff});
+
+localStorage.setItem("subjects",JSON.stringify(subjects));
+
+document.getElementById("subject").value="";
+
+displaySubjects();
+
+}
+
+function displaySubjects(){
+
+let html="";
+
+subjects.forEach(s=>{
+html+=`<div class="subject">${s.name} - ${s.diff}</div>`;
+});
+
+document.getElementById("subjects").innerHTML=html;
+
+}
+
+function getHours(diff){
+
+if(diff==="Easy") return 1;
+if(diff==="Medium") return 2;
+if(diff==="Hard") return 3;
+
+}
+
+function generatePlan(){
+
+let result="<h3>📅 Study Schedule</h3>";
+
+subjects.forEach(s=>{
+result+=`${s.name} - ${getHours(s.diff)} hrs<br>`;
+});
+
+document.getElementById("plan").innerHTML=result;
+
+localStorage.setItem("plan",result);
+
+}
+
+document.getElementById("plan").innerHTML = localStorage.getItem("plan") || "";
+
+
+// Pomodoro Timer
+
+let time=1500;
+let timer;
+
+function startTimer(){
+
+clearInterval(timer);
+
+timer=setInterval(()=>{
+
+if(time<=0){
+
+alert("Break Time!");
+
+clearInterval(timer);
+
+time=300;
+
+}
+
+let min=Math.floor(time/60);
+let sec=time%60;
+
+document.getElementById("time").innerHTML=
+(min<10?"0":"")+min+":"+(sec<10?"0":"")+sec;
+
+time--;
+
+},1000);
+
+}
+
+function resetTimer(){
+
+clearInterval(timer);
+
+time=1500;
+
+document.getElementById("time").innerHTML="25:00";
+
+}
+
+</script>
+
+</body>
+</html>
