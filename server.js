@@ -76,26 +76,16 @@ app.post("/generatePlan", async (req, res) => {
       `- ${s.name}: Difficulty = ${s.difficulty}, Available Hours = ${s.hours}`
     ).join("\n");
 
-    const prompt = `You are an expert study planner. Create a detailed, personalized study schedule.
+    const prompt = `You are a study planner. Create a study schedule.
 
-Student's subjects:
+Subjects:
 ${subjectList}
 
-Planning details:
-- Total study days available: ${totalDays || 7}
-- Study hours per day: ${studyHoursPerDay || 4}
-- Start date: ${startDate || new Date().toDateString()}
+Days: ${totalDays || 7}, Hours/day: ${studyHoursPerDay || 4}, Start: ${startDate}
 
-Rules:
-1. Allocate MORE sessions/time to Hard subjects, MEDIUM to Medium, LESS to Easy
-2. Spread subjects across all days — don't bunch one subject together
-3. Each session should be 1-2 hours max (for focus)
-4. Include short breaks between sessions
-5. Give realistic daily time slots (e.g., 9:00 AM - 11:00 AM)
-
-Respond ONLY with a valid JSON object in this exact format (no markdown, no extra text):
+Respond ONLY with valid JSON (no extra text):
 {
-  "summary": "Brief 1-2 sentence overview of the plan",
+  "summary": "brief overview",
   "totalHours": 20,
   "plan": [
     {
@@ -104,22 +94,22 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
       "sessions": [
         {
           "time": "9:00 AM - 11:00 AM",
-          "subject": "subject name",
-          "topic": "what to focus on",
+          "subject": "name",
+          "topic": "focus area",
           "duration": "2 hours",
           "difficulty": "Hard"
         }
       ]
     }
   ],
-  "tips": ["tip1", "tip2", "tip3"]
+  "tips": ["tip1", "tip2"]
 }`;
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llama-3.3-70b-versatile",
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 4000,
     });
 
     const rawText = completion.choices[0].message.content;
