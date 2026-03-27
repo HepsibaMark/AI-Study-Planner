@@ -12,8 +12,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/studyplanner")
-  .then(() => console.log("✅ MongoDB Connected"))
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/studyplanner")
+.then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
 // Schema & Model
